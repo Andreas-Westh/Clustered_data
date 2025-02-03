@@ -3,8 +3,9 @@
 ## Overview
 This project analyzes soccer passing data using Wyscout event data stored in MongoDB. The analysis includes passing patterns, success rates, pass lengths, directional tendencies, and clustering of passing styles.
 
->[!info]
->Main files are soccer_stats.R and wyscout_Kmeans_Clustering.R
+> **Info:**  
+> Main files are `soccer_stats.R` and `wyscout_Kmeans_Clustering.R`
+
 
 ## Data Source
 The data is extracted from MongoDB, where match events are stored in JSON format. Events are structured hierarchically, with each match containing multiple event entries. Only pass events are considered for analysis.
