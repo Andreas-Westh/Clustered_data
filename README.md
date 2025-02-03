@@ -54,3 +54,7 @@ Passes are clustered based on:
 1. Pass length
 2. Pass angle
 3. Match time (minute)
+
+The Algoritm takes 70 iterations to finish with the set.seed(123)
+![Pass Clustering Results](Pass_KMeans_cluster.png.png)
+
