@@ -37,10 +37,22 @@ AaM <- allgames[allgames$`_id` %in% idv,]
 events_list <- lapply(AaM$events, as.data.frame)
 
 # Bind all event data frames together
-events_df <- bind_rows(events_list)
+events_df <- flatten(bind_rows(events_list))
 
 # Filter for pass events where `type$primary == "pass"`
 pass_events <- events_df %>%
-  filter(type$primary == "pass")
+  filter(type.primary == "pass")
+
+hist(pass_events$pass.length)
+
+
+
+# To Do
+# The muscles:
+#   group_by
+#   mutate
+#   1. Lenght
+#   2. 
+
 
                      
