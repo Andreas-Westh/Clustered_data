@@ -54,6 +54,36 @@ centroids <- df %>% group_by(cluster) %>% mutate(X=mean(X),Y=mean(Y)) %>%
 
 
 #### While Loop ####
+isChanged=T
 
+while (isChanged==T) {
+
+  changecounter = 0
+  centroids <- df %>% group_by(cluster) %>% mutate(X=mean(X),Y=mean(Y)) %>%
+    unique() %>% 
+    ungroup()
+  
+  ggplot(df, aes(x=X,y=Y,color=as.factor(cluster)))+
+    geom_point()+
+    geom_point(data=centroids, aes(x=X,y=Y, size = 4, shape = as.factor(cluster)))
+
+  Sys.sleep(5)
+  
+  for (i in (1:nrow(df))) {
+    colv=vector()
+    for (j in (1:k)){
+      tmpdist = sqrt(((centroids[[j, 'X']] - df[[i, 'X']])^2) 
+                     + ((centroids[[j, 'Y']] - df[[i, 'Y']])^2))
+      colv[j]=tmpdist
+    }
+    ncl=which.min(colv)
+    if (ncl != df[i,'cluster']) {
+    # detect change
+    changecounter = changecounter + 1
+    df[i, 'cluster']=ncl
+    }
+  }
+  isChanged = changecounter > 0
+}
 
 
