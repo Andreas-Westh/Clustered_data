@@ -79,6 +79,7 @@ while (isChanged) {
   p <- plot_ly() %>%
     add_trace(data = df, x = ~X, y = ~Y, z = ~Z, 
               type = "scatter3d", mode = "markers",
+              
               color = ~as.factor(cluster), marker = list(size = 5)) %>%
     add_trace(data = centroids, x = ~X, y = ~Y, z = ~Z, 
               type = "scatter3d", mode = "markers",

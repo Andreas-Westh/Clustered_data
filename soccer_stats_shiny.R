@@ -1,3 +1,10 @@
+# To do 
+# 1. Add soccerfield visual
+#     ggsoccer
+
+
+
+
 library(shiny)
 library(ggplot2)
 library(dplyr)
