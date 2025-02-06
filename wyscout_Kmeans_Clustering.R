@@ -146,3 +146,100 @@ position_counts <- df_with_positions %>%
   summarise(count = n()) %>%
   arrange(desc(count)) %>% as.data.frame()
 
+
+
+
+
+colnames(allmatches)[colnames(allmatches) == "_id"] <- "matchId"
+totstat_wide <- merge(allmatches,totstat_wide, "matchId")
+# Plotly 3D Cluster Plot
+cluster <- plot_ly(totstat_wide, 
+        x = ~passl, 
+        y = ~totpasses, 
+        z = ~accratio, 
+        color = ~cluster,
+        colors = c("red", "blue", "green"), 
+        type = "scatter3d", 
+        mode = "markers",
+        text = ~paste("Match ID:", matchId, "<br>",
+                      "Pass Length:", round(passl, 2), "<br>",
+                      "Total Passes:", totpasses, "<br>",
+                      "Accuracy Ratio:", accratio, "<br>",
+                      "Kampen endte:", label),
+        hoverinfo = "text") %>%
+  layout(title = "3D Interactive Cluster Plot for Ajax Pass Statistics",
+         scene = list(
+           xaxis = list(title = "Pass Length"),
+           yaxis = list(title = "Total Passes"),
+           zaxis = list(title = "Accuracy Ratio")
+         ))
+
+
+library(shiny)
+library(plotly)
+
+# UI layout
+ui <- fluidPage(
+  titlePanel("3D Interactive Cluster Plot"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      # Dropdown for selecting hover text labels
+      selectInput("hover_labels", "Select labels for hover text:",
+                  choices = c("Match ID" = "matchId",
+                              "Pass Length" = "passl",
+                              "Total Passes" = "totpasses",
+                              "Accuracy Ratio" = "accratio",
+                              "Kampen endte" = "label"),
+                  selected = c("matchId", "passl", "totpasses", "accratio", "label"),
+                  multiple = TRUE)
+    ),
+    
+    mainPanel(
+      plotlyOutput("plot") # Output area for the 3D plot
+    )
+  )
+)
+
+server <- function(input, output) {
+  output$plot <- renderPlotly({
+    # Construct dynamic hover text based on user-selected labels
+    hover_text <- apply(totstat_wide, 1, function(row) {
+      paste(sapply(input$hover_labels, function(var) {
+        paste0(var, ": ", round(as.numeric(row[[var]]), 2))
+      }), collapse = "<br>")
+    })
+    
+    # Generate the 3D scatter plot with a fixed soothing color palette
+    plot_ly(totstat_wide, 
+            x = ~passl, 
+            y = ~totpasses, 
+            z = ~accratio, 
+            color = ~cluster,
+            colors = c("#1f77b4", "#ff7f0e", "#2ca02c"),  # Fixed color palette
+            type = "scatter3d", 
+            mode = "markers",
+            text = hover_text,
+            hoverinfo = "text") %>%
+      layout(title = "3D Interactive Cluster Plot for Ajax Pass Statistics",
+             scene = list(
+               xaxis = list(title = "Pass Length"),
+               yaxis = list(title = "Total Passes"),
+               zaxis = list(title = "Accuracy Ratio")
+             ))
+  })
+}
+
+shinyApp(ui, server)
+
+
+
+
+
+
+
+
+
+
+
+
