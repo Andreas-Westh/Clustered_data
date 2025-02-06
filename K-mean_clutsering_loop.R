@@ -2,7 +2,7 @@ library(dplyr)
 library(plotly)
 
 # Set seed for reproducability
-set.seed(123)
+set.seed(210802)
 
 dffull <- read.csv("bmi.csv")
 colnames(dffull)
@@ -20,9 +20,30 @@ k <- 3 # Number of clusters
 df$cluster <- sample(1:k, nrow(df), replace = T)
 
   # 3D scatter plot of the first random initilation
-  plot_ly(df, x = ~X, y = ~Y, z = ~Z, 
-          color = ~cluster, 
-          type = "scatter3d", mode = "markers")
+  #plot_ly(df, x = ~X, y = ~Y, z = ~Z, 
+  #        color = ~cluster, 
+  #        type = "scatter3d", mode = "markers")
+
+plot_ly() %>%
+  add_trace(data = df, x = ~X, y = ~Y, z = ~Z, 
+            type = "scatter3d", mode = "markers",
+            color = ~as.factor(cluster), marker = list(size = 5),
+            text = ~paste("Age:", X, "<br>",
+                          "Height:", Y, "<br>",
+                          "Weight:",Z,"<br>"),  # Fixed text formatting
+            hoverinfo = "text"  # Ensures only the text is shown in hover
+  ) %>%
+  add_trace(data = centroids, x = ~X, y = ~Y, z = ~Z, 
+            type = "scatter3d", mode = "markers",
+            marker = list(size = 10, symbol = "diamond", color = "black"),
+            name = "Centroids"
+  ) %>%
+  layout(title = "Pure Random Cluster",
+         scene = list(xaxis = list(title = "Age"),
+                      yaxis = list(title = "Height (cm)"),
+                      zaxis = list(title = "Weight (kg)")))
+
+
 
 # Loop until cluster assignments stop changing
 isChanged <- TRUE
@@ -43,15 +64,20 @@ while (isChanged) {
   p <- plot_ly() %>%
     add_trace(data = df, x = ~X, y = ~Y, z = ~Z, 
               type = "scatter3d", mode = "markers",
-              color = ~as.factor(cluster), marker = list(size = 5)) %>%
+              color = ~as.factor(cluster), marker = list(size = 5),
+              text = ~paste("Age:", X, "<br>",
+                            "Height:", Y, "<br>",
+                            "Weight:",Z,"<br>"),  # Fixed text formatting
+              hoverinfo = "text"  # Ensures only the text is shown in hover
+    ) %>%
     add_trace(data = centroids, x = ~X, y = ~Y, z = ~Z, 
               type = "scatter3d", mode = "markers",
               marker = list(size = 10, symbol = "diamond", color = "black"),
               name = "Centroids") %>%
     layout(title = paste("Iteration:", roundcounter),
-           scene = list(xaxis = list(title = "X"),
-                        yaxis = list(title = "Y"),
-                        zaxis = list(title = "Z")))
+           scene = list(xaxis = list(title = "Age"),
+                        yaxis = list(title = "Height (cm)"),
+                        zaxis = list(title = "Weight (kg)")))
   
   print(p)  # Display plot
   Sys.sleep(2)  # Pause for visualization
@@ -80,3 +106,7 @@ while (isChanged) {
     cat("\n The K-mean clustering is finished at ", roundcounter," iterations!\n")
   }
 }
+
+df_bind <- cbind(dffull, df)
+aggregated <- as.data.frame(table(df_bind$cluster, df_bind$BmiClass)) %>%
+  arrange(Var1)
