@@ -16,6 +16,9 @@ library(stringr)
 library(tidyr)
 library(mongolite)
 
+
+
+#### Data Retrieval ####
 #connect to mongo
 cong=mongo(
   collection = "games",
@@ -52,6 +55,7 @@ query = jsonlite::toJSON(list(`_id` = list(`$in` = idvt)), auto_unbox = TRUE)
 result=cong$find(query=query, fields = '{}')
 testl=result$events
 testdf=bind_rows(testl)
+##### Tjek er om eget alternativ er bedre #####
 resdf=fromJSON(toJSON(testdf),flatten=T)
 
 ajaxEvents=resdf %>% filter(team.name=="Ajax")
@@ -127,6 +131,26 @@ ajax_matches <- allmatches %>%
 
 
 
+#### Do the elbow test ####
+# Compute WCSS (total within-cluster sum of squares) for K = 1 to 20
+dftwss <- data.frame(k = 1:20, twss = 0)
+
+for (i in 1:20) {
+  tmod <- kmeans(totstat_wide_scaled, centers = i, nstart = 10)
+  dftwss[i, 'twss'] <- tmod$tot.withinss
+}
+
+# Plot the Elbow Method graph
+ggplot(dftwss, aes(x = k, y = twss)) +
+  geom_line(color = "blue") +
+  geom_point(color = "red") +
+  labs(title = "Elbow Method for Optimal K",
+       x = "Number of Clusters (K)",
+       y = "Total Within-Cluster Sum of Squares") +
+  theme_minimal()
+
+
+##### Wulf's elbow method #####
 dftwss=data.frame(k=1:20,twss=0)
 for (i in (1:20)) {
   tmod=kmeans(totstat_wide_scaled,centers = i,nstart = 10)
@@ -135,18 +159,23 @@ for (i in (1:20)) {
 
 plot(dftwss)
 
-kmod=kmeans(totstat_wide_scaled, nstart = 10, centers =3)
-kmod=kmeans(totstat_wide, nstart = 10, centers =3)
-library(factoextra)
-fviz_cluster(kmod, data = totstat_wide)
 
-# pca
+#### kmeans cluster ####
+kmod=kmeans(totstat_wide_scaled, nstart = 10, centers =3)
+kmod=kmeans(totstat_wide_scaled, nstart = 10, centers =3)
+library(factoextra)
+fviz_cluster(kmod, data = totstat_wide_scaled)
+
+#### pca ####
 data.pca <- princomp(totstat_wide_scaled)
 summary(data.pca)
-data.pca$loadings[, 1:2]
+data.pca$loadings[, 1:3]
 fviz_pca_var(data.pca, col.var = "black")
 
-# hcl
+#### 3D Visual with 3 most influential variables ####
+
+
+#### hcl ####
 distm=dist(totstat_wide_scaled)
 hi=hclust(distm,method = "complete")
 plot(hi)
