@@ -132,9 +132,17 @@ ajax_matches <- allmatches %>%
 
 
 #### Do the elbow test ####
+    ##### Wulf's elbow method #####
+    dftwss=data.frame(k=1:20,twss=0)
+    for (i in (1:20)) {
+      tmod=kmeans(totstat_wide_scaled,centers = i,nstart = 10)
+      dftwss[i,'twss']=tmod$tot.withinss
+    }
+      plot(dftwss)
+
+
 # Compute WCSS (total within-cluster sum of squares) for K = 1 to 20
 dftwss <- data.frame(k = 1:20, twss = 0)
-
 for (i in 1:20) {
   tmod <- kmeans(totstat_wide_scaled, centers = i, nstart = 10)
   dftwss[i, 'twss'] <- tmod$tot.withinss
@@ -149,15 +157,6 @@ ggplot(dftwss, aes(x = k, y = twss)) +
        y = "Total Within-Cluster Sum of Squares") +
   theme_minimal()
 
-
-##### Wulf's elbow method #####
-dftwss=data.frame(k=1:20,twss=0)
-for (i in (1:20)) {
-  tmod=kmeans(totstat_wide_scaled,centers = i,nstart = 10)
-  dftwss[i,'twss']=tmod$tot.withinss
-}
-
-plot(dftwss)
 
 
 #### kmeans cluster ####
