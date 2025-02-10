@@ -156,6 +156,7 @@ plot_ly(totstat_wide_scaled_3d,
 
 
 #### hcl (Hierarchical Clustering) ####
+totstat_wide_scaled <- totstat_wide_scaled[,-10]
 distm <- dist(totstat_wide_scaled)
 hi <- hclust(distm, method = "complete")
 plot(hi)
