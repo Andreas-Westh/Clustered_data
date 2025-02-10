@@ -56,5 +56,5 @@ Passes are clustered based on:
 3. Match time (minute)
 
 The Algoritm takes 70 iterations to finish with the set.seed(123)
-![Pass Clustering Results](KMeans_result.png)
-![Pass Clustering Results Zoomed](KMeans_zoomed.png)
+![Pass Clustering Results](Images/KMeans_result.png)
+![Pass Clustering Results Zoomed](Images/KMeans_zoomed.png)
