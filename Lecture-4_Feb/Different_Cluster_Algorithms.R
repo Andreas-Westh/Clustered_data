@@ -172,7 +172,31 @@ data.pca$loadings[, 1:3]
 fviz_pca_var(data.pca, col.var = "black")
 
 #### 3D Visual with 3 most influential variables ####
+colnames(allmatches)[colnames(allmatches) == "_id"] <- "matchId"
+totstat_wide_scaled <- merge(allmatches,totstat_wide, "matchId")
+##### Noget galt med away team, skal fixes #####
 
+# Plotly 3D Cluster Plot
+plot_ly(totstat_wide, 
+        x = ~passl, 
+        y = ~totpasses, 
+        z = ~accratio, 
+        color = ~cluster,
+        colors = c("red", "blue", "green"), 
+        type = "scatter3d", 
+        mode = "markers",
+        text = ~paste("Match ID:", matchId, "<br>",
+                      "Pass Length:", round(passl, 2), "<br>",
+                      "Total Passes:", totpasses, "<br>",
+                      "Accuracy Ratio:", accratio, "<br>",
+                      "Kampen endte:", label),
+        hoverinfo = "text") %>%
+  layout(title = "3D Interactive Cluster Plot for Ajax Pass Statistics",
+         scene = list(
+           xaxis = list(title = "Pass Length"),
+           yaxis = list(title = "Total Passes"),
+           zaxis = list(title = "Accuracy Ratio")
+         ))
 
 #### hcl ####
 distm=dist(totstat_wide_scaled)
