@@ -1,6 +1,9 @@
 library(dkstat)
 library(dplyr)
 library(tidyverse)
+library(factoextra)
+library(plotly)
+library(mapDK)
 
 #### Data Retrieval Straf44 ####
 strafmeta <- dst_meta("straf44")
@@ -49,11 +52,23 @@ colnames(dfBy_urb) <- c("OMRÅDE","urbproct")
 ##### Merging #####
 dkArrest <- inner_join(dfStrafWide, dfBy_urb, by="OMRÅDE")
 dkArrest$urbproct <- round(dkArrest$urbproct,1)
-dkArrest_Scaled <- scale(dkArrest[,-1])
+dkArrest_Scaled <- as.data.frame(scale(dkArrest[,-1]))
 
 
 ##### Outliers and correlation #####
+# Outliers
 hist(dkArrest_Scaled$Manddrab)
+hist(dkArrest_Scaled$`Voldsforbrydelser i alt`)
+hist(dkArrest_Scaled$`Voldtægt mv.`)
+
+## Remove outlier
+# Found via checking row number in non-scaled df
+dkArrest_Scaled <- dkArrest_Scaled[-52,] # Removes copenhagen
+dkArrest <- dkArrest[-52,]
+
+# Correlations
+dkArrest_Corr <- cor(dkArrest_Scaled)
+corrplot::corrplot(dkArrest_Corr,addCoef.col = "black",method = "square",type = "lower")
 
 
 #### Clustering ####
@@ -68,4 +83,52 @@ for (i in (1:8)) { # Max 8 clusters
 ##### Elbow plot #####
 plot(colldf)
 
+# Optimal k
+dk_cluster <- kmeans(dkArrest_Scaled, centers = 3,nstart=10)
+
+# Quick viz check
+fviz_cluster(dk_cluster,data = dkArrest_Scaled)
+
+# Clusterinfo addes to dkArrest
+dkArrest$Cluster <- dk_cluster$cluster
+
+
+
+#### Analyse ####
+dkArrast_Analyse <- dkArrest %>% group_by(Cluster) %>% 
+  summarise(across(2:5,mean))
+
+# Make long for plot
+dkArrast_AnalyseLong <- dkArrast_Analyse %>% 
+  pivot_longer(c(2,3,4,5),names_to = "Crimetype",values_to = "value")
+
+# Barplot
+ggplot(dkArrast_AnalyseLong,aes(x=Cluster,y=log(value),fill = as.factor(Crimetype)))+
+  geom_bar(stat = "identity",position = "dodge")
+
+##### PCA #####
+dkPCA <- princomp(dkArrest_Scaled)
+dkPCA$loadings
+
+##### 3d plot #####
+p <- plot_ly(
+  data = dkArrest,
+  x=~Manddrab,y=~`Voldtægt mv.`,z=~urbproct,
+  type = "scatter3d",
+  mode = "markers",
+  color = ~as.factor(Cluster),
+  text = ~paste(
+    "Kommune: ",OMRÅDE,"<br>",
+    "Drab: ",Manddrab,"<br>",
+    "Pop: ",urbproct,"<br>",
+    "Voldtægt",`Voldtægt mv.`,"<br>"
+    ),
+  hoverinfo="text"
+)
+p
+
+##### Denmark Map plot #####
+dkArrest_Map <- dkArrest %>% select(OMRÅDE,Cluster) %>% mutate(Cluster=Cluster*1000)
+colnames(dkArrest_Map) <- c("Kommune","Cluster")
+mapDK(values = "Cluster", id = "Kommune", data = dkArrest_Map)
 
