@@ -27,7 +27,12 @@ for (file in csv_files) {
   table_name <- tools::file_path_sans_ext(basename(file))  # Extract filename as table name
   df <- read_csv(file)  # Read CSV
   dbWriteTable(con, table_name, df, overwrite = TRUE, row.names = FALSE)  # Upload to MySQL
-  message(paste("Uploaded:", table_name))
-}
+  message(paste("Uploaded:", table_name))}
+
+
+
+
+
+
 
 
