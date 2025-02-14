@@ -1,5 +1,3 @@
-# https://www.youtube.com/watch?v=WUjgcBCLIQY&t=24s
-
 library(dkstat)
 library(dplyr)
 library(tidyverse)
@@ -51,6 +49,23 @@ colnames(dfBy_urb) <- c("OMRÅDE","urbproct")
 ##### Merging #####
 dkArrest <- inner_join(dfStrafWide, dfBy_urb, by="OMRÅDE")
 dkArrest$urbproct <- round(dkArrest$urbproct,1)
+dkArrest_Scaled <- scale(dkArrest[,-1])
+
+
+##### Outliers and correlation #####
+hist(dkArrest_Scaled$Manddrab)
 
 
 #### Clustering ####
+##### kmeans #####
+colldf <- as.data.frame(matrix(nrow=0,ncol=2))
+for (i in (1:8)) { # Max 8 clusters
+  tmp_cluster <- kmeans(dkArrest_Scaled, centers = i, nstart = 10) # nstart creates multiple (10) configurations of centroids, picks the best
+  colldf[i,1]=i
+  colldf[i,2]=tmp_cluster$tot.withinss # Total within-cluster sum of squares
+}
+
+##### Elbow plot #####
+plot(colldf)
+
+
