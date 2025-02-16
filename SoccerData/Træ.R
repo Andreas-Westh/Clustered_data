@@ -44,7 +44,7 @@ cat(pass_acc,"%\n")
 ##### 2. Forklaringer på om aflevering er successfuld eller ej #####
 df_passes$pass.accurate <- as.numeric(df_passes$pass.accurate)
 cor(df_passes$pass.accurate, df_passes$pass.length)
-  # -0.17
+  # -0.18
 cor(df_passes$pass.accurate, df_passes$pass.angle)
   # 0.02
 
@@ -54,13 +54,20 @@ shotpass <- df_passes[sapply(df_passes$type.secondary, function(x) "shot_assist"
 assist_acc <- round((nrow(shotpass) / nrow(df_passes)) * 100,2)
 cat(assist_acc,"%\n")
 
+# checks if "shot_assist" exists in the row, then returns TRUE/FALSE 
+df_passes$shot_assist_flag <- as.factor(sapply(df_passes$type.secondary, function(x) "shot_assist" %in% x))
 
 ##### 4. Opstil et beslutningstræ til vurdering af præcision i en given aflevering i jeres data #####
 library(rpart)
 library(rpart.plot)
 df_passes$pass.accurate <- as.factor(df_passes$pass.accurate)
-tree_model <- rpart(pass.accurate ~ pass.length, data = df_passes, method = "class")
-rpart.plot(tree_model, type = 3, extra = 101, fallen.leaves = TRUE)
+#tree_model <- rpart(pass.accurate ~ pass.length + pass.angle + possession.duration, data = df_passes, method = "class")
+tree_model <- rpart(pass.accurate ~ pass.length, 
+                    data = df_passes, 
+                    method = "class",
+                    control = rpart.control(maxdepth = 4, minsplit = 10, cp = 0.01))
+# tree_model$variable importance
+rpart.plot(tree_model, type = 2, extra = 104,box.palette = "BuGn")
 
 
 
